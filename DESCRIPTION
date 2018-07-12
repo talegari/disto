@@ -1,9 +1,9 @@
 Package: disto
 Type: Package
-Title: Unified interface to distance, dissimilarity, similarity matrices
+Title: Unified Interface to Distance, Dissimilarity, Similarity Matrices
 Version: 0.1.0
 Authors@R: person("KS", "Srikanth", email = "sri.teach@gmail.com", role = c("aut", "cre"))
-Description: Provides a high level API to interface over backends storing distance, dissimilarity, similarity matrices with matrix style extraction, replacement and other utilities. Currently, in-memory dist object backend is supported.
+Description: Provides a high level API to interface over sources storing distance, dissimilarity, similarity matrices with matrix style extraction, replacement and other utilities. Currently, in-memory dist object backend is supported.
 URL: https://github.com/talegari/disto
 BugReports: https://github.com/talegari/disto/issues
 Imports:
