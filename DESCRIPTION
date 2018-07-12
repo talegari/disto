@@ -1,0 +1,27 @@
+Package: disto
+Type: Package
+Title: Unified interface to distance, dissimilarity, similarity matrices
+Version: 0.1.0
+Authors@R: person("KS", "Srikanth", email = "sri.teach@gmail.com", role = c("aut", "cre"))
+Description: Provides a high level API to interface over backends storing distance, dissimilarity, similarity matrices with matrix style extraction, replacement and other utilities. Currently, in-memory dist object backend is supported.
+URL: https://github.com/talegari/disto
+BugReports: https://github.com/talegari/disto/issues
+Imports:
+    proxy (>= 0.4.19),
+    dplyr (>= 0.7.4),
+    assertthat (>= 0.2.0),
+    fastmatch(>= 1.1.0),
+    tidyr (>= 0.8.0),
+    factoextra (>= 1.0.5),
+    ggplot2 (>= 2.2.1),
+    broom (>= 0.4.4),
+    fastcluster (>= 1.1.25),
+Depends:
+    R (>= 3.4.4)
+License: GPL-3
+Encoding: UTF-8
+RoxygenNote: 6.0.1
+Suggests:
+    knitr (>= 1.15.1),
+    rmarkdown (>= 1.4),
+VignetteBuilder: knitr
