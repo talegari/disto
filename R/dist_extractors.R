@@ -1,27 +1,64 @@
-#' @name dist_subset
-#' @title dist_subset
-#' @description Compute subset faster than regular `[[` on a dist object. This
-#'   is from \pkg{proxy} package (not exported by proxy).
-#' @param x dist object
-#' @param subset index of the subset. This has to be unique.
-#' @param ... additional arguments
-#' @return returns a dist subset
-#' @export
-dist_subset <- getFromNamespace("subset.dist", ns = "proxy")
+#' @name dist_ij_k_
+#' @title Convert ij index to k index
+#' @description Convert ij index to k index for a dist object
+#' @param i row index
+#' @param j column index
+#' @param size value of size attribute of the dist object
+#' @return k index
+dist_ij_k_ <- compiler::cmpfun(
+  function(i, j, size){
 
-#' @name distExtractPair
-#' @title distExtractPair
-#' @description extract distance between a pair of indexes
-#' @param object dist object
-#' @param index1 index1
-#' @param index2 index2
-#' @return distance corresponding to indexes
-distExtractPair <- function(object, index1, index2){
-  dplyr::if_else(index1 == index2
-                 , 0
-                 , dist_subset(object, c(index1, index2))[1]
-                 )
-}
+    if(i == j){
+      NA_integer_
+    }
+    else if(i < j){
+
+      size*(i-1) - i*(i-1)/2 + j-i
+
+    } else {
+
+      size*(j-1) - j*(j-1)/2 + i-j
+    }
+  }
+  , options = list(optimize = 3)
+)
+
+#' @name dist_ij_k
+#' @title Vectorized version of dist_ij_k_
+#' @description Convert ij indexes to k indexes for a dist object
+#' @param i row indexes
+#' @param j column indexes
+#' @param size value of size attribute of the dist object
+#' @return k indexes
+dist_ij_k <- compiler::cmpfun(
+  Vectorize(dist_ij_k_, vectorize.args = c("i", "j"))
+  , options = list(optimize = 3)
+)
+
+#' @name dist_k_ij_
+#' @title Convert kth index to ij index
+#' @description Convert kth index to ij index of a dist object
+#' @param k kth index
+#' @param size value of size attribute of the dist object
+#' @return ij index as a length two integer vector
+dist_k_ij_ <- compiler::cmpfun(function(k, size){
+  sums <- cumsum(seq(size - 1, 1, -1))
+  j    <- Position(function(x) x >= k, sums)
+  i    <- size - sums[j] + k
+
+  return(c(i, j))
+})
+
+#' @name dist_k_ij
+#' @title Vectorized version of dist_k_ij_
+#' @description Convert kth indexes to ij indexes of a dist object
+#' @param k kth indexes
+#' @param size value of size attribute of the dist object
+#' @return ij indexes as 2*n matrix where n is length of k vector
+dist_k_ij <- compiler::cmpfun(
+  Vectorize(dist_k_ij_, vectorize.args = c("k", "size"))
+  , options = list(optimize = 3)
+)
 
 #' @name dist_extract
 #' @title Matrix style extraction from dist object
@@ -67,150 +104,101 @@ distExtractPair <- function(object, index1, index2){
 #'
 #' dist_extract(temp, k = 1:3) # product is always inner when k is specified
 #' @export
-dist_extract <- function(object
-                         , i
-                         , j
-                         , k
-                         , product = "outer"
-                         ){
+dist_extract <- compiler::cmpfun(
+  function(object
+           , i
+           , j
+           , k
+           , product = "outer"
+  ){
 
-  size   <- attr(object, "Size")
-  labels <- attr(object, "Labels")
+    size   <- attr(object, "Size")
+    labels <- attr(object, "Labels")
 
-  if(!missing(k)){
-    assertthat::assert_that(missing(i) && missing(j))
-    assertthat::assert_that(all(vapply(k, assertthat::is.count, logical(1))))
-    ijmat   <- dist_k_ij(k, size)
-    i       <- ijmat[1,]
-    j       <- ijmat[2,]
-    product <- "inner"
-  } else {
-    if(missing(i)){
-      i <- 1:size
+    if(!missing(k)){
+      assertthat::assert_that(missing(i) && missing(j))
+      assertthat::assert_that(all(vapply(k, assertthat::is.count, logical(1))))
+      assertthat::assert_that(max(k) <= size * (size - 1)/2)
+      product <- "inner"
+
+      out <- object[k]
+
     } else {
-      assertthat::assert_that(
-        all(
-          vapply(
-            i
-            , function(x) assertthat::is.count(x) || assertthat::is.string(x)
-            , logical(1)
+      if(missing(i)){
+        i <- 1:size
+      } else {
+        assertthat::assert_that(
+          all(
+            vapply(
+              i
+              , function(x) assertthat::is.count(x) || assertthat::is.string(x)
+              , logical(1)
             )
           )
         )
-      if(inherits(i, "character")){
-        if(is.null(labels)){
-          stop("dist object does not have names (labels). i, j, k should be integers.")
-        } else {
-          i <- fastmatch::fmatch(i, labels)
-          if(anyNA(i)){
-            warning("Unable to resolve some names to integer positions in i")
+        if(inherits(i, "character")){
+          if(is.null(labels)){
+            stop("dist object does not have names (labels). i, j, k should be integers.")
+          } else {
+            i <- fastmatch::fmatch(i, labels)
+            if(anyNA(i)){
+              stop("Unable to resolve some names to integer positions in i")
+            }
           }
-          i <- i[!is.na(i)]
         }
+        assertthat::assert_that(!any(i > size))
       }
-      assertthat::assert_that(!any(i > size))
-    }
-    if(missing(j)){
-      j <- 1:size
-    } else {
-      assertthat::assert_that(
-        all(
-          vapply(
-            j
-            , function(x) assertthat::is.count(x) || assertthat::is.string(x)
-            , logical(1)
+      if(missing(j)){
+        j <- 1:size
+      } else {
+        assertthat::assert_that(
+          all(
+            vapply(
+              j
+              , function(x) assertthat::is.count(x) || assertthat::is.string(x)
+              , logical(1)
             )
           )
         )
-      if(inherits(j, "character")){
-        if(is.null(labels)){
-          stop("dist object does not have names (labels). i, j should be integers.")
-        } else {
-          j <- fastmatch::fmatch(j, labels)
-          if(anyNA(j)){
-            warning("Unable to resolve some names to integer positions in j")
+        if(inherits(j, "character")){
+          if(is.null(labels)){
+            stop("dist object does not have names (labels). i, j should be integers.")
+          } else {
+            j <- fastmatch::fmatch(j, labels)
+            if(anyNA(j)){
+              stop("Unable to resolve some names to integer positions in j")
+            }
           }
-          j <- j[!is.na(j)]
+        }
+        assertthat::assert_that(!any(j > size))
+      }
+      assertthat::assert_that(assertthat::is.string(product) &&
+                                product %in% c("inner", "outer")
+      )
+      il <- length(i)
+      jl <- length(j)
+
+      if(product == "inner"){
+
+        out <- object[dist_ij_k(i, j, size)]
+
+      } else { # outer case
+
+        out             <- object[outer(i, j, function(x, y) dist_ij_k(x, y, size))]
+        dim(out)        <- c(il, jl)
+
+        if(!is.null(labels)){
+          rownames(out) <- labels[i]
+          colnames(out) <- labels[j]
         }
       }
-      assertthat::assert_that(!any(j > size))
     }
-    assertthat::assert_that(assertthat::is.string(product) &&
-                            product %in% c("inner", "outer")
-                           )
+
+    out[is.na(out)] <- 0
+    return(out)
   }
-
-  pair <- function(x, y) distExtractPair(object, x, y)
-
-  if(product == "inner"){
-    fullLength <- max(length(i), length(j))
-    i <- rep(i, length.out = fullLength)
-    j <- rep(j, length.out = fullLength)
-
-    out <- mapply(pair, i, j)
-
-  } else { # outer case
-
-    out <- outer(i, j, Vectorize(pair, vectorize.args = c("x", "y")))
-
-    if(!is.null(labels)){
-      rownames(out) <- labels[i]
-      colnames(out) <- labels[j]
-    }
-  }
-
-  return(out)
-}
-
-#' @name dist_ij_k_
-#' @title Convert ij index to k index
-#' @description Convert ij index to k index for a dist object
-#' @param i row index
-#' @param j column index
-#' @param size value of size attribute of the dist object
-#' @return k index
-dist_ij_k_ <- function(i, j, size){
-  if(i < j){
-    size*(i-1) - i*(i-1)/2 + j-i
-  } else {
-    size*(j-1) - j*(j-1)/2 + i-j
-  }
-}
-
-#' @name dist_ij_k
-#' @title Vectorized version of dist_ij_k_
-#' @description Convert ij indexes to k indexes for a dist object
-#' @param i row indexes
-#' @param j column indexes
-#' @param size value of size attribute of the dist object
-#' @return k indexes
-dist_ij_k <- Vectorize(dist_ij_k_
-                       , vectorize.args = c("i", "j", "size")
-                       )
-
-#' @name dist_k_ij_
-#' @title Convert kth index to ij index
-#' @description Convert kth index to ij index of a dist object
-#' @param k kth index
-#' @param size value of size attribute of the dist object
-#' @return ij index as a length two integer vector
-dist_k_ij_ <- function(k, size){
-  sums <- cumsum(seq(size - 1, 1, -1))
-  j    <- Position(function(x) x >= k, sums)
-  i    <- size - sums[j] + k
-
-  return(c(i, j))
-}
-
-#' @name dist_k_ij
-#' @title Vectorized version of dist_k_ij_
-#' @description Convert kth indexes to ij indexes of a dist object
-#' @param k kth indexes
-#' @param size value of size attribute of the dist object
-#' @return ij indexes as 2*n matrix where n is length of k vector
-dist_k_ij <- Vectorize(dist_k_ij_
-                       , vectorize.args = c("k", "size")
-                       )
+  , options = list(optimize = 3)
+)
 
 #' @name dist_replace
 #' @title Replacement values in dist
@@ -264,87 +252,105 @@ dist_k_ij <- Vectorize(dist_k_ij_
 #' dist_extract(d, k = 2)
 #' dist_extract(d, 3, 1, product = "inner") # extracting k=2 in ij-mode
 #' @export
-dist_replace <- function(object
-                         , i
-                         , j
-                         , value
-                         , k
-                         ){
+dist_replace <- compiler::cmpfun(
+  function(object
+           , i
+           , j
+           , value
+           , k
+  ){
 
-  size   <- attr(object, "Size")
-  labels <- attr(object, "Labels")
+    size   <- attr(object, "Size")
+    labels <- attr(object, "Labels")
 
-  if(!missing(k)){ # k-mode
+    if(!missing(k)){ # k-mode
 
-    assertthat::assert_that(missing(i) && missing(j))
-    assertthat::assert_that(
-      all(vapply(k, assertthat::is.count, logical(1)))
+      assertthat::assert_that(missing(i) && missing(j))
+      assertthat::assert_that(
+        all(vapply(k, assertthat::is.count, logical(1)))
       )
-    assertthat::assert_that(max(k) <= size * (size - 1)/2)
-    assertthat::assert_that(is.numeric(value))
-    assertthat::assert_that(length(value) %in% c(1, length(k)))
+      assertthat::assert_that(max(k) <= size * (size - 1)/2)
+      assertthat::assert_that(is.numeric(value))
+      assertthat::assert_that(length(value) %in% c(1, length(k)))
 
-  } else {
-
-    if(missing(i)){
-      i <- 1:size
     } else {
-      assertthat::assert_that(
-        all(
-          vapply(
-            i
-            , function(x) assertthat::is.count(x) || assertthat::is.string(x)
-            , logical(1)
+
+      if(missing(i)){
+        i <- 1:size
+      } else {
+        assertthat::assert_that(
+          all(
+            vapply(
+              i
+              , function(x) assertthat::is.count(x) || assertthat::is.string(x)
+              , logical(1)
             )
           )
         )
-      if(inherits(i, "character")){
-        if(is.null(labels)){
-          stop("dist object does not have names (labels). i, j, k should be integers.")
-        } else {
-          i <- fastmatch::fmatch(i, labels)
-          if(anyNA(i)){
-            stop("Unable to resolve some names to integer positions in i")
+        if(inherits(i, "character")){
+          if(is.null(labels)){
+            stop("dist object does not have names (labels). i, j, k should be integers.")
+          } else {
+            i <- fastmatch::fmatch(i, labels)
+            if(anyNA(i)){
+              stop("Unable to resolve some names to integer positions in i")
+            }
           }
         }
+        assertthat::assert_that(!any(i > size))
       }
-      assertthat::assert_that(!any(i > size))
-    }
 
-    if(missing(j)){
-      j <- 1:size
-    } else {
-      assertthat::assert_that(
-        all(
-          vapply(
-            j
-            , function(x) assertthat::is.count(x) || assertthat::is.string(x)
-            , logical(1)
+      if(missing(j)){
+        j <- 1:size
+      } else {
+        assertthat::assert_that(
+          all(
+            vapply(
+              j
+              , function(x) assertthat::is.count(x) || assertthat::is.string(x)
+              , logical(1)
             )
           )
         )
-      if(inherits(j, "character")){
-        if(is.null(labels)){
-          stop("dist object does not have names (labels). i, j should be integers.")
-        } else {
-          j <- fastmatch::fmatch(j, labels)
-          if(anyNA(j)){
-            stop("Unable to resolve some names to integer positions in j")
+        if(inherits(j, "character")){
+          if(is.null(labels)){
+            stop("dist object does not have names (labels). i, j should be integers.")
+          } else {
+            j <- fastmatch::fmatch(j, labels)
+            if(anyNA(j)){
+              stop("Unable to resolve some names to integer positions in j")
+            }
           }
         }
+        assertthat::assert_that(!any(j > size))
       }
-      assertthat::assert_that(!any(j > size))
+
+      il <- length(i)
+      jl <- length(j)
+      if(il != jl){
+        stop("Lengths of i and j should be equal")
+      }
+      assertthat::assert_that(!any(i == j))
+      assertthat::assert_that(is.numeric(value))
+      assertthat::assert_that(length(value) %in% c(1L, il))
+
+      k <- dist_ij_k(i, j, size)
     }
 
-    assertthat::assert_that(length(i) == length(j))
-    assertthat::assert_that(!any(i == j))
-    assertthat::assert_that(is.numeric(value))
-    assertthat::assert_that(length(value) %in% c(1, length(i)))
+    object[k] <- value
+    return(object)
 
-    k <- dist_ij_k(i, j, size)
   }
+  , options = list(optimize = 3)
+)
 
-  object[k] <- value
-  return(object)
-
-}
+#' @name dist_subset
+#' @title dist_subset
+#' @description Compute subset faster than regular `[[` on a dist object. This
+#'   is from \pkg{proxy} package (not exported by proxy).
+#' @param x dist object
+#' @param subset index of the subset. This has to be unique.
+#' @param ... additional arguments
+#' @return returns a dist subset
+#' @export
+dist_subset <- getFromNamespace("subset.dist", ns = "proxy")

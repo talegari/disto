@@ -294,22 +294,30 @@ as.data.frame.disto <- function(x, ...){
 
   if(!missing(k)){
     assertthat::assert_that(missing(i) && missing(j))
-    assertthat::assert_that(assertthat::is.count(k) && k <= size * (size - 1)/2)
+    assertthat::assert_that(assertthat::is.scalar(k) &&
+                            assertthat::is.count(k) &&
+                            k <= size * (size - 1)/2
+                            )
   } else {
-    assertthat::assert_that(assertthat::is.count(i) && i <= size)
-    assertthat::assert_that(assertthat::is.count(j) && j <= size)
+    assertthat::assert_that(assertthat::is.scalar(i) &&
+                              assertthat::is.count(i) &&
+                              i <= size
+                            )
+    assertthat::assert_that(assertthat::is.scalar(j) &&
+                              assertthat::is.count(j) &&
+                              j <= size
+                            )
   }
 
   res <- switch(x$backend
     , dist = {
         if(missing(k)){
 
-          distExtractPair(get(x$name, envir = x$env), i, j)
+          `[`(get(x$name, envir = x$env), dist_ij_k(i, j, size))
 
         } else {
 
-          ij <- dist_k_ij(k, size)
-          distExtractPair(get(x$name, envir = x$env), ij[1], ij[2])
+          `[`(get(x$name, envir = x$env), k)
 
         }
       }
@@ -375,9 +383,8 @@ as.data.frame.disto <- function(x, ...){
 #' @param margin (one among 1 or 2) dimension to apply function along
 #' @param fun Function to apply over the margin
 #' @param subset (integer vector) Row/Column numbers along the margin
-#' @param simplify Passed to 'simplify' argument of \code{\link[future.apply]{future_sapply}}
 #' @param nproc Number of parallel processes (unix only)
-#' @return Same as the value of \code{\link[future.apply]{future_sapply}}
+#' @return Simplified output of 'sapply' like function
 #' temp <- dist(iris[,1:4])
 #' dio  <- disto(objectname = "temp")
 #'
@@ -390,7 +397,7 @@ as.data.frame.disto <- function(x, ...){
 #' hi <- dapply(dio, 1, udf)[-1, ]
 #' dim(hi)
 #' @export
-dapply <- function(x, margin = 1, fun, subset, simplify = TRUE, nproc = 1){
+dapply <- function(x, margin = 1, fun, subset, nproc = 1){
 
   assertthat::assert_that(inherits(x, "disto"))
   assertthat::assert_that(assertthat::is.scalar(margin) && margin %in% 1:2)
@@ -404,15 +411,10 @@ dapply <- function(x, margin = 1, fun, subset, simplify = TRUE, nproc = 1){
     assertthat::assert_that(all(subset %in% 1:size))
   }
 
-  if(.Platform$OS.type == "unix"){
-    res <- parallel::mcmapply(function(s) fun(x[s, ])
-                              , subset
-                              , SIMPLIFY = simplify
-                              , mc.cores = nproc
-                              )
-  } else {
-    res <- sapply(subset, function(s) fun(x[s, ]), simplify = simplify)
-  }
+  res <- pbapply::pbsapply(subset
+                           , function(s) fun(x[s, ])
+                           , cl = nproc
+                           )
   return(res)
 }
 

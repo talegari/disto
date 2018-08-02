@@ -4,7 +4,7 @@
 \alias{dapply}
 \title{Matrix like apply function for disto object}
 \usage{
-dapply(x, margin = 1, fun, subset, simplify = TRUE, nproc = 1)
+dapply(x, margin = 1, fun, subset, nproc = 1)
 }
 \arguments{
 \item{x}{disto object}
@@ -15,12 +15,10 @@ dapply(x, margin = 1, fun, subset, simplify = TRUE, nproc = 1)
 
 \item{subset}{(integer vector) Row/Column numbers along the margin}
 
-\item{simplify}{Passed to 'simplify' argument of \code{\link[future.apply]{future_sapply}}}
-
 \item{nproc}{Number of parallel processes (unix only)}
 }
 \value{
-Same as the value of \code{\link[future.apply]{future_sapply}}
+Simplified output of 'sapply' like function
 temp <- dist(iris[,1:4])
 dio  <- disto(objectname = "temp")
 

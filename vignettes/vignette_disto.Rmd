@@ -1,8 +1,10 @@
 ---
 title: "Introduction to disto"
-author: "Srikanth KS"
+subtitle: "Matrix like abstraction for distance matrices"
+author: |
+  | Srikanth KS 1^[Email: sri.teach@gmail.com]
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: rmarkdown::pdf_document
 vignette: >
   %\VignetteIndexEntry{Introduction_to_disto}
   %\VignetteEngine{knitr::rmarkdown}
@@ -11,14 +13,14 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
+  collapse = TRUE
+  , comment = "#>"
 )
 ```
 
 ## Introduction
 
-> **disto** provides a high level API to interface over backends storing distance, dissimilarity, similarity matrices with matrix style extraction, replacement and other utilities. Currently, in-memory dist object backend is supported.
+> **disto**  is a R package that provides a high level API to interface over backends storing distance, dissimilarity, similarity matrices with matrix style extraction, replacement and other utilities. Currently, in-memory dist object backend is supported.
 
 ## Why disto?
 
@@ -130,24 +132,29 @@ dio[1:5, 2:6, product = "inner"]
 
 ### 'apply' like function
 
-The flow of `as.matrix(do) %>% apply(1, somefunction)` is convenient. `dapply` provides the same without coercion to a matrix.
+The flow of `as.matrix(do) %>% apply(1, somefunction)` is convenient. `dapply` provides the same without coercion to a matrix. This slower than the above flow but consumes much less memory. `dapply` is parallelized on UNIX-based systems.
 
 ```{r}
 # lets find indexes of five nearest neighbors for each observation/item
 
 # function to pick indexes of 5 nearest neighbors
 # an efficient alternative (with Rcpp) might be better
-udf <- function(x){
-  dim(x) <- NULL
-  order(x)[1:6]
-}
+udf <- function(x) order(x)[2:6]
 
-hi <- dapply(dio, 1, udf)[-1, ]
+hi <- dapply(dio, 1, udf)
 dim(hi)
 hi[1:5, 1:5]
 ```
 
-`dapply` is parallelized on UNIX-based systems.
+### Extract and replace functions for 'dist' objects
+
+The workhorse functions for the dist class are `dist_extract` and `dist_replace`.
+
+```{r}
+dist_extract(do, 1:5, 2:7)
+do <- dist_replace(do, 1:3, 4:6, 101:103)
+dist_extract(do, 1:3, 4:6, product = "inner")
+```
 
 ----
 

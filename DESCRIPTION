@@ -1,7 +1,7 @@
 Package: disto
 Type: Package
 Title: Unified Interface to Distance, Dissimilarity, Similarity Matrices
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: person("KS", "Srikanth", email = "sri.teach@gmail.com", role = c("aut", "cre"))
 Description: Provides a high level API to interface over sources storing distance, dissimilarity, similarity matrices with matrix style extraction, replacement and other utilities. Currently, in-memory dist object backend is supported.
 URL: https://github.com/talegari/disto
@@ -16,6 +16,7 @@ Imports:
     ggplot2 (>= 2.2.1),
     broom (>= 0.4.4),
     fastcluster (>= 1.1.25),
+    pbapply (>= 1.3.4),
 Depends:
     R (>= 3.4.0)
 License: GPL-3
