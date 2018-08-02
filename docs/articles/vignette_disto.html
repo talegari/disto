@@ -29,7 +29,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">disto</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.1.0</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.0</span>
       </span>
     </div>
 
@@ -56,6 +56,9 @@
     </li>
   </ul>
 </li>
+<li>
+  <a href="../news/index.html">Changelog</a>
+</li>
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
@@ -77,9 +80,11 @@
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1>Introduction to disto</h1>
-                        <h4 class="author">Srikanth KS</h4>
+            <h3 class="subtitle">Matrix like abstraction for distance matrices</h3>
+                        <h4 class="author"><div style="white-space: pre-line;">Srikanth KS 1<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>
+</div></h4>
             
-            <h4 class="date">2018-07-13</h4>
+            <h4 class="date">2018-08-02</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/talegari/disto/blob/master/vignettes/vignette_disto.Rmd"><code>vignettes/vignette_disto.Rmd</code></a></small>
       <div class="hidden name"><code>vignette_disto.Rmd</code></div>
@@ -92,7 +97,7 @@
 <h2 class="hasAnchor">
 <a href="#introduction" class="anchor"></a>Introduction</h2>
 <blockquote>
-<p><strong>disto</strong> provides a high level API to interface over backends storing distance, dissimilarity, similarity matrices with matrix style extraction, replacement and other utilities. Currently, in-memory dist object backend is supported.</p>
+<p><strong>disto</strong> is a R package that provides a high level API to interface over backends storing distance, dissimilarity, similarity matrices with matrix style extraction, replacement and other utilities. Currently, in-memory dist object backend is supported.</p>
 </blockquote>
 </div>
 <div id="why-disto" class="section level2">
@@ -278,17 +283,14 @@ dio[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,
 <div id="apply-like-function" class="section level3">
 <h3 class="hasAnchor">
 <a href="#apply-like-function" class="anchor"></a>‘apply’ like function</h3>
-<p>The flow of <code>as.matrix(do) %&gt;% apply(1, somefunction)</code> is convenient. <code>dapply</code> provides the same without coercion to a matrix.</p>
+<p>The flow of <code>as.matrix(do) %&gt;% apply(1, somefunction)</code> is convenient. <code>dapply</code> provides the same without coercion to a matrix. This slower than the above flow but consumes much less memory. <code>dapply</code> is parallelized on UNIX-based systems.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># lets find indexes of five nearest neighbors for each observation/item</span>
 
 <span class="co"># function to pick indexes of 5 nearest neighbors</span>
 <span class="co"># an efficient alternative (with Rcpp) might be better</span>
-udf &lt;-<span class="st"> </span><span class="cf">function</span>(x){
-  <span class="kw">dim</span>(x) &lt;-<span class="st"> </span><span class="ot">NULL</span>
-  <span class="kw">order</span>(x)[<span class="dv">1</span><span class="op">:</span><span class="dv">6</span>]
-}
+udf &lt;-<span class="st"> </span><span class="cf">function</span>(x) <span class="kw">order</span>(x)[<span class="dv">2</span><span class="op">:</span><span class="dv">6</span>]
 
-hi &lt;-<span class="st"> </span><span class="kw"><a href="../reference/dapply.html">dapply</a></span>(dio, <span class="dv">1</span>, udf)[<span class="op">-</span><span class="dv">1</span>, ]
+hi &lt;-<span class="st"> </span><span class="kw"><a href="../reference/dapply.html">dapply</a></span>(dio, <span class="dv">1</span>, udf)
 <span class="kw">dim</span>(hi)
 <span class="co">#&gt; [1]  5 32</span>
 hi[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>]
@@ -298,12 +300,38 @@ hi[<span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, 
 <span class="co">#&gt; [3,]   11   10   21    6   25</span>
 <span class="co">#&gt; [4,]    9   11   27   23   22</span>
 <span class="co">#&gt; [5,]   32    9   32   13   23</span></code></pre></div>
-<p><code>dapply</code> is parallelized on UNIX-based systems.</p>
+</div>
+<div id="extract-and-replace-functions-for-dist-objects" class="section level3">
+<h3 class="hasAnchor">
+<a href="#extract-and-replace-functions-for-dist-objects" class="anchor"></a>Extract and replace functions for ‘dist’ objects</h3>
+<p>The workhorse functions for the dist class are <code>dist_extract</code> and <code>dist_replace</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw"><a href="../reference/dist_extract.html">dist_extract</a></span>(do, <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>, <span class="dv">2</span><span class="op">:</span><span class="dv">7</span>)
+<span class="co">#&gt;                   Mazda RX4 Wag Datsun 710 Hornet 4 Drive</span>
+<span class="co">#&gt; Mazda RX4               7.00000   54.90861       98.11252</span>
+<span class="co">#&gt; Mazda RX4 Wag           0.00000    8.00000       98.09589</span>
+<span class="co">#&gt; Datsun 710              8.00000    0.00000        9.00000</span>
+<span class="co">#&gt; Hornet 4 Drive         98.09589    9.00000        0.00000</span>
+<span class="co">#&gt; Hornet Sportabout     210.33585  265.08316       10.00000</span>
+<span class="co">#&gt;                   Hornet Sportabout   Valiant Duster 360</span>
+<span class="co">#&gt; Mazda RX4                  210.3374  65.47177  241.40765</span>
+<span class="co">#&gt; Mazda RX4 Wag              210.3359  65.43922  241.40887</span>
+<span class="co">#&gt; Datsun 710                 265.0832 117.75470  294.47902</span>
+<span class="co">#&gt; Hornet 4 Drive              10.0000  33.55087  169.42996</span>
+<span class="co">#&gt; Hornet Sportabout            0.0000  11.00000   70.17673</span>
+do &lt;-<span class="st"> </span><span class="kw"><a href="../reference/dist_replace.html">dist_replace</a></span>(do, <span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, <span class="dv">4</span><span class="op">:</span><span class="dv">6</span>, <span class="dv">101</span><span class="op">:</span><span class="dv">103</span>)
+<span class="kw"><a href="../reference/dist_extract.html">dist_extract</a></span>(do, <span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, <span class="dv">4</span><span class="op">:</span><span class="dv">6</span>, <span class="dt">product =</span> <span class="st">"inner"</span>)
+<span class="co">#&gt; [1] 101 102 103</span></code></pre></div>
 <hr>
 <p>Author: Srikanth KS, <a href="mailto:sri.teach@gmail.com">sri.teach@gmail.com</a></p>
 <p>URL: <a href="https://github.com/talegari/disto" class="uri">https://github.com/talegari/disto</a></p>
 <p>BugReports: <a href="https://github.com/talegari/disto/issues" class="uri">https://github.com/talegari/disto/issues</a></p>
 </div>
+</div>
+<div class="footnotes">
+<hr>
+<ol>
+<li id="fn1"><p>Email: <a href="mailto:sri.teach@gmail.com">sri.teach@gmail.com</a><a href="#fnref1">↩</a></p></li>
+</ol>
 </div>
   </div>
 

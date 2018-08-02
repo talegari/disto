@@ -61,7 +61,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">disto</a>
-        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.1.0</span>
+        <span class="label label-default" data-toggle="tooltip" data-placement="bottom" title="Released package">0.2.0</span>
       </span>
     </div>
 
@@ -87,6 +87,9 @@
       <a href="../articles/vignette_disto.html">Introduction to disto</a>
     </li>
   </ul>
+</li>
+<li>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul>
       
@@ -120,7 +123,7 @@
     
     </div>
 
-    <pre class="usage"><span class='fu'>dapply</span>(<span class='no'>x</span>, <span class='kw'>margin</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>fun</span>, <span class='no'>subset</span>, <span class='kw'>simplify</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>nproc</span> <span class='kw'>=</span> <span class='fl'>1</span>)</pre>
+    <pre class="usage"><span class='fu'>dapply</span>(<span class='no'>x</span>, <span class='kw'>margin</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='no'>fun</span>, <span class='no'>subset</span>, <span class='kw'>nproc</span> <span class='kw'>=</span> <span class='fl'>1</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -142,10 +145,6 @@
       <td><p>(integer vector) Row/Column numbers along the margin</p></td>
     </tr>
     <tr>
-      <th>simplify</th>
-      <td><p>Passed to 'simplify' argument of <code><a href='http://www.rdocumentation.org/packages/future.apply/topics/future_lapply'>future_sapply</a></code></p></td>
-    </tr>
-    <tr>
       <th>nproc</th>
       <td><p>Number of parallel processes (unix only)</p></td>
     </tr>
@@ -153,7 +152,7 @@
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>Same as the value of <code><a href='http://www.rdocumentation.org/packages/future.apply/topics/future_lapply'>future_sapply</a></code>
+    <p>Simplified output of 'sapply' like function
 temp &lt;- dist(iris[,1:4])
 dio  &lt;- disto(objectname = "temp")</p>
 <p># function to pick indexes of 5 nearest neighbors
