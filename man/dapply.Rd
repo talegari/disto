@@ -2,9 +2,9 @@
 % Please edit documentation in R/disto_methods.R
 \name{dapply}
 \alias{dapply}
-\title{Matrix like apply function for disto object}
+\title{lapply like function for disto object}
 \usage{
-dapply(x, margin = 1, fun, subset, nproc = 1)
+dapply(x, margin = 1, fun, subset, nproc = 1, progress)
 }
 \arguments{
 \item{x}{disto object}
@@ -13,24 +13,37 @@ dapply(x, margin = 1, fun, subset, nproc = 1)
 
 \item{fun}{Function to apply over the margin}
 
-\item{subset}{(integer vector) Row/Column numbers along the margin}
+\item{subset}{(integer vector) Row/Column numbers along the margin. If this
+is missing, all rows or columns are considered}
 
 \item{nproc}{Number of parallel processes (unix only)}
+
+\item{progress}{(flag) Whether to show the progress bar or not. If missing
+and if the length of the subset is at least 1e4, progress is considered to
+be TRUE.}
 }
 \value{
-Simplified output of 'sapply' like function
-temp <- dist(iris[,1:4])
-dio  <- disto(objectname = "temp")
-
-# function to pick indexes of 5 nearest neighbors
-# an efficient alternative with Rcpp is required
-udf <- function(x){
-  dim(x) <- NULL
-  order(x)[1:6]
-  }
-hi <- dapply(dio, 1, udf)[-1, ]
-dim(hi)
+A list
 }
 \description{
 Apply function for data underlying disto object
+}
+\details{
+fun should accept two arguments(in the same order): First, a vector
+  of distances (row or column of a disto depending on the margin). Second,
+  the row or the column number. See the example below
+}
+\examples{
+temp <- dist(iris[,1:4])
+dio  <- disto(objectname = "temp")
+# function to pick unsorted indexes of 5 nearest neighbors (excepting itself)
+udf_nn <- function(distances, index){
+
+  nnPlusOne <- which(
+                 data.table::frankv(distances, ties.method = "dense") <= 6)
+  setdiff(nnPlusOne, index)
+}
+hi <- dapply(dio, 1, udf_nn)
+head(hi)
+max(sapply(hi, length))
 }

@@ -3,8 +3,6 @@
 \docType{package}
 \name{disto}
 \alias{disto}
-\alias{disto}
-\alias{disto-package}
 \alias{disto-package}
 \title{Constructor for class 'disto'}
 \usage{

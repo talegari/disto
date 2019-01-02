@@ -2,7 +2,7 @@
 title: "Introduction to disto"
 subtitle: "Matrix like abstraction for distance matrices"
 author: |
-  | Srikanth KS 1^[Email: sri.teach@gmail.com]
+  | Srikanth KS^[Email: sri.teach@gmail.com]
 date: "`r Sys.Date()`"
 output: rmarkdown::pdf_document
 vignette: >
@@ -137,13 +137,13 @@ The flow of `as.matrix(do) %>% apply(1, somefunction)` is convenient. `dapply` p
 ```{r}
 # lets find indexes of five nearest neighbors for each observation/item
 
-# function to pick indexes of 5 nearest neighbors
-# an efficient alternative (with Rcpp) might be better
-udf <- function(x) order(x)[2:6]
-
-hi <- dapply(dio, 1, udf)
-dim(hi)
-hi[1:5, 1:5]
+# function to pick unsorted indexes of 5 nearest neighbors (excepting itself)
+udf_nn <- function(distances, index){
+  nnPlusOne <- which(data.table::frankv(distances, ties.method = "dense") <= 6)
+  setdiff(nnPlusOne, index)
+}
+hi <- dapply(dio, 1, udf_nn)
+head(hi)
 ```
 
 ### Extract and replace functions for 'dist' objects
