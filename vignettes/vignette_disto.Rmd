@@ -132,7 +132,7 @@ dio[1:5, 2:6, product = "inner"]
 
 ### 'apply' like function
 
-The flow of `as.matrix(do) %>% apply(1, somefunction)` is convenient. `dapply` provides the same without coercion to a matrix. This slower than the above flow but consumes much less memory. `dapply` is parallelized on UNIX-based systems.
+The flow of `as.matrix(do) %>% apply(1, somefunction)` is convenient. `dapply` provides 'lapply' like functionality without coercion to a matrix. This slower than the above flow but consumes much less memory. `dapply` is parallelized on UNIX-based systems.
 
 ```{r}
 # lets find indexes of five nearest neighbors for each observation/item
@@ -144,6 +144,18 @@ udf_nn <- function(distances, index){
 }
 hi <- dapply(dio, 1, udf_nn)
 head(hi)
+```
+
+### Nearest neighbors
+
+Two nearest methods are implemented: k nearest neighbors and fixed radius nearest neighbors.
+```{r}
+# k nearest neighbors
+knn <- nn(dio, k = 3)
+head(knn)
+
+frnn <- nn(dio, r = 10)
+head(frnn)
 ```
 
 ### Extract and replace functions for 'dist' objects

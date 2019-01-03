@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>dist_subset — dist_subset • disto</title>
+<title>Nearest neighbors and distances — nn • disto</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,10 +30,10 @@
 
 
 
-<meta property="og:title" content="dist_subset — dist_subset" />
+<meta property="og:title" content="Nearest neighbors and distances — nn" />
 
-<meta property="og:description" content="Compute subset faster than regular `[[` on a dist object. This
-  is from proxy package (not exported by proxy)." />
+<meta property="og:description" content="Obtain index of nearest neighbors and distances from a disto
+  handle. k nearest or fixed radius neighbors are supported" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -115,42 +115,55 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>dist_subset</h1>
-    <small class="dont-index">Source: <a href='https://github.com/talegari/disto/blob/master/R/dist_extractors.R'><code>R/dist_extractors.R</code></a></small>
-    <div class="hidden name"><code>dist_subset.Rd</code></div>
+    <h1>Nearest neighbors and distances</h1>
+    <small class="dont-index">Source: <a href='https://github.com/talegari/disto/blob/master/R/nn_utils.R'><code>R/nn_utils.R</code></a></small>
+    <div class="hidden name"><code>nn.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Compute subset faster than regular `[[` on a dist object. This
-  is from <span class="pkg">proxy</span> package (not exported by proxy).</p>
+    <p>Obtain index of nearest neighbors and distances from a disto
+  handle. k nearest or fixed radius neighbors are supported</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>dist_subset</span>(<span class='no'>x</span>, <span class='no'>subset</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>nn</span>(<span class='no'>distoObject</span>, <span class='no'>k</span>, <span class='no'>r</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
-      <td><p>dist object</p></td>
+      <th>distoObject</th>
+      <td><p>Object of class 'disto'</p></td>
     </tr>
     <tr>
-      <th>subset</th>
-      <td><p>index of the subset. This has to be unique.</p></td>
+      <th>k</th>
+      <td><p>Number of nearest neighbors</p></td>
+    </tr>
+    <tr>
+      <th>r</th>
+      <td><p>Radius for nearest neighbors</p></td>
     </tr>
     <tr>
       <th>...</th>
-      <td><p>additional arguments</p></td>
+      <td><p>Additional arguments for <code><a href='dapply.html'>dapply</a></code></p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>returns a dist subset</p>
+    <p>A list with size of 'distObject' or length of the subset argument
+  provided in dotdotdot. Each element of the list is a list with two
+  elements: One is indexes, other is distances</p>
+    
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>Exactly one among k or r has to be provided</p>
     
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='no'>do</span>  <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/dist'>dist</a></span>(<span class='no'>iris</span>[, <span class='fl'>1</span>:<span class='fl'>4</span>])
+<span class='no'>dio</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='disto.html'>disto</a></span>(<span class='kw'>objectname</span> <span class='kw'>=</span> <span class='st'>"do"</span>)</div><div class='output co'>#&gt; <span class='error'>Error: Unable to find the object in the specified environment.</span></div><div class='input'><span class='fu'>nn</span>(<span class='no'>dio</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>5</span>)</div><div class='output co'>#&gt; <span class='error'>Error in inherits(distoObject, "disto"): object 'dio' not found</span></div><div class='input'><span class='fu'>nn</span>(<span class='no'>dio</span>, <span class='kw'>r</span> <span class='kw'>=</span> <span class='fl'>3</span>)</div><div class='output co'>#&gt; <span class='error'>Error in inherits(distoObject, "disto"): object 'dio' not found</span></div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -158,7 +171,11 @@
       <li><a href="#arguments">Arguments</a></li>
       
       <li><a href="#value">Value</a></li>
-          </ul>
+
+      <li><a href="#details">Details</a></li>
+      
+      <li><a href="#examples">Examples</a></li>
+    </ul>
 
   </div>
 </div>

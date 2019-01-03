@@ -1,6 +1,9 @@
 # News
 #### package: disto
 
+- 0.2.3: 
+    - dapply behaves like lapply
+    - Nearest neighbors function added
 - 0.2.0: Maintainance release
     - Workhorse functions are now JIT compiled
     - Using native subsetting over extractPair

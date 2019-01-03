@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>dist_subset — dist_subset • disto</title>
+<title>k Nearest neighbors — nn_k • disto</title>
 
 <!-- jquery -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -30,10 +30,9 @@
 
 
 
-<meta property="og:title" content="dist_subset — dist_subset" />
+<meta property="og:title" content="k Nearest neighbors — nn_k" />
 
-<meta property="og:description" content="Compute subset faster than regular `[[` on a dist object. This
-  is from proxy package (not exported by proxy)." />
+<meta property="og:description" content="k Nearest neighbors from a vector of distances" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -115,40 +114,35 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>dist_subset</h1>
-    <small class="dont-index">Source: <a href='https://github.com/talegari/disto/blob/master/R/dist_extractors.R'><code>R/dist_extractors.R</code></a></small>
-    <div class="hidden name"><code>dist_subset.Rd</code></div>
+    <h1>k Nearest neighbors</h1>
+    <small class="dont-index">Source: <a href='https://github.com/talegari/disto/blob/master/R/nn_utils.R'><code>R/nn_utils.R</code></a></small>
+    <div class="hidden name"><code>nn_k.Rd</code></div>
     </div>
 
     <div class="ref-description">
     
-    <p>Compute subset faster than regular `[[` on a dist object. This
-  is from <span class="pkg">proxy</span> package (not exported by proxy).</p>
+    <p>k Nearest neighbors from a vector of distances</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>dist_subset</span>(<span class='no'>x</span>, <span class='no'>subset</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>nn_k</span>(<span class='no'>vec</span>, <span class='no'>index</span>, <span class='no'>k</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>x</th>
-      <td><p>dist object</p></td>
+      <th>vec</th>
+      <td><p>Vector of distances</p></td>
     </tr>
     <tr>
-      <th>subset</th>
-      <td><p>index of the subset. This has to be unique.</p></td>
+      <th>index</th>
+      <td><p>dummy to facilitate dapply</p></td>
     </tr>
     <tr>
-      <th>...</th>
-      <td><p>additional arguments</p></td>
+      <th>k</th>
+      <td><p>Number of nearest neighbors</p></td>
     </tr>
     </table>
-    
-    <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
-
-    <p>returns a dist subset</p>
     
 
   </div>
@@ -156,9 +150,7 @@
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
-      
-      <li><a href="#value">Value</a></li>
-          </ul>
+                </ul>
 
   </div>
 </div>
