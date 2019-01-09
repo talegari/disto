@@ -4,33 +4,74 @@
 \alias{nn}
 \title{Nearest neighbors and distances}
 \usage{
-nn(distoObject, k, r, ...)
+nn(x, k, r, ...)
 }
 \arguments{
-\item{distoObject}{Object of class 'disto'}
+\item{x}{Object of class 'disto' or a numeric matrix}
 
 \item{k}{Number of nearest neighbors}
 
 \item{r}{Radius for nearest neighbors}
 
-\item{...}{Additional arguments for \code{\link{dapply}}}
+\item{...}{Additional arguments for \code{\link{dapply}} when x is 'disto'
+object. Else additional arguments are sent to
+\code{\link[pbmcapply]{pbmclapply}}}
 }
 \value{
-A list with size of 'distObject' or length of the subset argument
-  provided in dotdotdot. Each element of the list is a list with two
-  elements: One is indexes (integer vector), other is distances (numeric
-  vectors)
+A list with these elements: \itemize{
+
+  \item \emph{triplet}: Matrix with three columns: row, col and distance. For
+  a fixed observation(value in 'row'), all corresponding values in 'col' are
+  the indexes of the nearest neighbors. All corresponding values in
+  'distance' are the distances to those nearest neighbors
+
+  \item \emph{size}: Size of the distance matrix or number of rows of the
+  matrix
+
+  \item \emph{k} or \emph{r} : Depending on the input
+
+  }
 }
 \description{
-Obtain index of nearest neighbors and distances from a disto
+Obtain nearest neighbors and distances from a matrix or disto
   handle. k nearest or fixed radius neighbors are supported
 }
 \details{
 Exactly one among k or r has to be provided
 }
 \examples{
-do  <- dist(iris[, 1:4])
+\dontrun{
+# create a matrix
+set.seed(100)
+mat <- cbind(rnorm(3e3), rpois(3e3, 1))
+
+# compute a distance matrix and get a disto handle
+do <- stats::dist(mat)
 dio <- disto(objectname = "do")
-nn(dio, k = 5)
-nn(dio, r = 3)
+
+# nearest neighbors: k nearest and fixed radius
+nn(dio, k = 1)
+nn(mat, k = 1) # distance method defaults to 'euclidean'
+str(nn(mat, k = 1)) # observe the structure of the output
+
+nn(dio, r = 0.1)
+nn(mat, r = 0.1)
+
+# nearest neighbors parallelized: k nearest and fixed radius
+# fast computation, higher memory usage
+nn(dio, k = 1, nproc = 2)
+nn(mat, k = 1, mc.cores = 2)
+
+nn(dio, r = 0.1, nproc = 2)
+nn(mat, r = 0.1, mc.cores = 2)
+
+# different distance method
+do <- stats::dist(mat, method = "manhattan")
+
+nn(dio, k = 1, nproc = 2)
+nn(mat, k = 1, method = "manhattan", mc.cores = 2)
+
+nn(dio, r = 0.1, nproc = 2)
+nn(mat, r = 0.1, method = "manhattan", mc.cores = 2)
+}
 }

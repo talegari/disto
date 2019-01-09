@@ -4,7 +4,7 @@ subtitle: "Matrix like abstraction for distance matrices"
 author: |
   | Srikanth KS^[Email: sri.teach@gmail.com]
 date: "`r Sys.Date()`"
-output: rmarkdown::pdf_document
+output: rmarkdown::html_document
 vignette: >
   %\VignetteIndexEntry{Introduction_to_disto}
   %\VignetteEngine{knitr::rmarkdown}
@@ -148,14 +148,17 @@ head(hi)
 
 ### Nearest neighbors
 
-Two nearest methods are implemented: k nearest neighbors and fixed radius nearest neighbors.
+Two nearest methods are implemented: k nearest neighbors and fixed radius nearest neighbors for 'disto' handles and matrices.
 ```{r}
 # k nearest neighbors
-knn <- nn(dio, k = 3)
-head(knn)
+nn(dio, k = 1)
+knn <- nn(as.matrix(mtcars), k = 1) # distance method defaults to 'euclidean'
+knn
+str(knn) # observe the structure of the output
 
-frnn <- nn(dio, r = 10)
-head(frnn)
+# frnn
+nn(dio, r = 3)
+nn(as.matrix(mtcars), r = 3)
 ```
 
 ### Extract and replace functions for 'dist' objects

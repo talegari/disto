@@ -32,7 +32,7 @@
 
 <meta property="og:title" content="Nearest neighbors and distances — nn" />
 
-<meta property="og:description" content="Obtain index of nearest neighbors and distances from a disto
+<meta property="og:description" content="Obtain nearest neighbors and distances from a matrix or disto
   handle. k nearest or fixed radius neighbors are supported" />
 <meta name="twitter:card" content="summary" />
 
@@ -122,19 +122,19 @@
 
     <div class="ref-description">
     
-    <p>Obtain index of nearest neighbors and distances from a disto
+    <p>Obtain nearest neighbors and distances from a matrix or disto
   handle. k nearest or fixed radius neighbors are supported</p>
     
     </div>
 
-    <pre class="usage"><span class='fu'>nn</span>(<span class='no'>distoObject</span>, <span class='no'>k</span>, <span class='no'>r</span>, <span class='no'>...</span>)</pre>
+    <pre class="usage"><span class='fu'>nn</span>(<span class='no'>x</span>, <span class='no'>k</span>, <span class='no'>r</span>, <span class='no'>...</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>distoObject</th>
-      <td><p>Object of class 'disto'</p></td>
+      <th>x</th>
+      <td><p>Object of class 'disto' or a numeric matrix</p></td>
     </tr>
     <tr>
       <th>k</th>
@@ -146,16 +146,24 @@
     </tr>
     <tr>
       <th>...</th>
-      <td><p>Additional arguments for <code><a href='dapply.html'>dapply</a></code></p></td>
+      <td><p>Additional arguments for <code><a href='dapply.html'>dapply</a></code> when x is 'disto'
+object. Else additional arguments are sent to
+<code><a href='https://www.rdocumentation.org/packages/pbmcapply/topics/pbmclapply'>pbmclapply</a></code></p></td>
     </tr>
     </table>
     
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A list with size of 'distObject' or length of the subset argument
-  provided in dotdotdot. Each element of the list is a list with two
-  elements: One is indexes (integer vector), other is distances (numeric
-  vectors)</p>
+    <p>A list with these elements:</p><ul>
+<li><p><em>triplet</em>: Matrix with three columns: row, col and distance. For
+  a fixed observation(value in 'row'), all corresponding values in 'col' are
+  the indexes of the nearest neighbors. All corresponding values in
+  'distance' are the distances to those nearest neighbors</p></li>
+<li><p><em>size</em>: Size of the distance matrix or number of rows of the
+  matrix</p></li>
+<li><p><em>k</em> or <em>r</em> : Depending on the input</p></li>
+</ul>
+
     
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
@@ -163,8 +171,40 @@
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>do</span>  <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/dist'>dist</a></span>(<span class='no'>iris</span>[, <span class='fl'>1</span>:<span class='fl'>4</span>])
-<span class='no'>dio</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='disto.html'>disto</a></span>(<span class='kw'>objectname</span> <span class='kw'>=</span> <span class='st'>"do"</span>)</div><div class='output co'>#&gt; <span class='error'>Error: Unable to find the object in the specified environment.</span></div><div class='input'><span class='fu'>nn</span>(<span class='no'>dio</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>5</span>)</div><div class='output co'>#&gt; <span class='error'>Error in inherits(distoObject, "disto"): object 'dio' not found</span></div><div class='input'><span class='fu'>nn</span>(<span class='no'>dio</span>, <span class='kw'>r</span> <span class='kw'>=</span> <span class='fl'>3</span>)</div><div class='output co'>#&gt; <span class='error'>Error in inherits(distoObject, "disto"): object 'dio' not found</span></div></pre>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='co'># create a matrix</span>
+<span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/Random'>set.seed</a></span>(<span class='fl'>100</span>)
+<span class='no'>mat</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='https://www.rdocumentation.org/packages/base/topics/cbind'>cbind</a></span>(<span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/Normal'>rnorm</a></span>(<span class='fl'>3e3</span>), <span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/Poisson'>rpois</a></span>(<span class='fl'>3e3</span>, <span class='fl'>1</span>))
+
+<span class='co'># compute a distance matrix and get a disto handle</span>
+<span class='no'>do</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>stats</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/dist'>dist</a></span>(<span class='no'>mat</span>)
+<span class='no'>dio</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='disto.html'>disto</a></span>(<span class='kw'>objectname</span> <span class='kw'>=</span> <span class='st'>"do"</span>)
+
+<span class='co'># nearest neighbors: k nearest and fixed radius</span>
+<span class='fu'>nn</span>(<span class='no'>dio</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>)
+<span class='fu'>nn</span>(<span class='no'>mat</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>) <span class='co'># distance method defaults to 'euclidean'</span>
+<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/str'>str</a></span>(<span class='fu'>nn</span>(<span class='no'>mat</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>)) <span class='co'># observe the structure of the output</span>
+
+<span class='fu'>nn</span>(<span class='no'>dio</span>, <span class='kw'>r</span> <span class='kw'>=</span> <span class='fl'>0.1</span>)
+<span class='fu'>nn</span>(<span class='no'>mat</span>, <span class='kw'>r</span> <span class='kw'>=</span> <span class='fl'>0.1</span>)
+
+<span class='co'># nearest neighbors parallelized: k nearest and fixed radius</span>
+<span class='co'># fast computation, higher memory usage</span>
+<span class='fu'>nn</span>(<span class='no'>dio</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>nproc</span> <span class='kw'>=</span> <span class='fl'>2</span>)
+<span class='fu'>nn</span>(<span class='no'>mat</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>mc.cores</span> <span class='kw'>=</span> <span class='fl'>2</span>)
+
+<span class='fu'>nn</span>(<span class='no'>dio</span>, <span class='kw'>r</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>nproc</span> <span class='kw'>=</span> <span class='fl'>2</span>)
+<span class='fu'>nn</span>(<span class='no'>mat</span>, <span class='kw'>r</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>mc.cores</span> <span class='kw'>=</span> <span class='fl'>2</span>)
+
+<span class='co'># different distance method</span>
+<span class='no'>do</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>stats</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/stats/topics/dist'>dist</a></span>(<span class='no'>mat</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"manhattan"</span>)
+
+<span class='fu'>nn</span>(<span class='no'>dio</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>nproc</span> <span class='kw'>=</span> <span class='fl'>2</span>)
+<span class='fu'>nn</span>(<span class='no'>mat</span>, <span class='kw'>k</span> <span class='kw'>=</span> <span class='fl'>1</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"manhattan"</span>, <span class='kw'>mc.cores</span> <span class='kw'>=</span> <span class='fl'>2</span>)
+
+<span class='fu'>nn</span>(<span class='no'>dio</span>, <span class='kw'>r</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>nproc</span> <span class='kw'>=</span> <span class='fl'>2</span>)
+<span class='fu'>nn</span>(<span class='no'>mat</span>, <span class='kw'>r</span> <span class='kw'>=</span> <span class='fl'>0.1</span>, <span class='kw'>method</span> <span class='kw'>=</span> <span class='st'>"manhattan"</span>, <span class='kw'>mc.cores</span> <span class='kw'>=</span> <span class='fl'>2</span>)
+<span class='co'># }</span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>

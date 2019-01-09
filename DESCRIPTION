@@ -17,6 +17,10 @@ Imports:
     broom (>= 0.4.4),
     fastcluster (>= 1.1.25),
     pbmcapply (>= 1.2.5),
+    data.table (>= 1.11.8),
+    magrittr (>= 1.5),
+    Matrix (>= 1.2.14),
+    methods,
 Depends:
     R (>= 3.4.0)
 License: GPL-3
@@ -25,5 +29,4 @@ RoxygenNote: 6.1.0
 Suggests:
     knitr (>= 1.15.1),
     rmarkdown (>= 1.4),
-    data.table (>= 1.11.8)
 VignetteBuilder: knitr

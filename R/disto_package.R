@@ -5,4 +5,5 @@
 #'   replacement and other utilities. Currently, in-memory dist object backend
 #'   is supported.
 #' @author Srikanth KS
+#' @importFrom magrittr %>%
 "_PACKAGE"

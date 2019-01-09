@@ -85,7 +85,7 @@
                         <h4 class="author"><div style="white-space: pre-line;">Srikanth KS<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a>
 </div></h4>
             
-            <h4 class="date">2019-01-03</h4>
+            <h4 class="date">2019-01-09</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/talegari/disto/blob/master/vignettes/vignette_disto.Rmd"><code>vignettes/vignette_disto.Rmd</code></a></small>
       <div class="hidden name"><code>vignette_disto.Rmd</code></div>
@@ -319,105 +319,32 @@ hi &lt;-<span class="st"> </span><span class="kw"><a href="../reference/dapply.h
 <div id="nearest-neighbors" class="section level3">
 <h3 class="hasAnchor">
 <a href="#nearest-neighbors" class="anchor"></a>Nearest neighbors</h3>
-<p>Two nearest methods are implemented: k nearest neighbors and fixed radius nearest neighbors.</p>
+<p>Two nearest methods are implemented: k nearest neighbors and fixed radius nearest neighbors for ‘disto’ handles and matrices.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># k nearest neighbors</span>
-knn &lt;-<span class="st"> </span><span class="kw"><a href="../reference/nn.html">nn</a></span>(dio, <span class="dt">k =</span> <span class="dv">3</span>)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(knn)
-<span class="co">#&gt; [[1]]</span>
-<span class="co">#&gt; [[1]]$indexes</span>
-<span class="co">#&gt; [1]  2 10</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[1]]$distances</span>
-<span class="co">#&gt; [1]  7.00000 15.36419</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[2]]</span>
-<span class="co">#&gt; [[2]]$indexes</span>
-<span class="co">#&gt; [1] 1 3</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[2]]$distances</span>
-<span class="co">#&gt; [1] 7 8</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[3]]</span>
-<span class="co">#&gt; [[3]]$indexes</span>
-<span class="co">#&gt; [1] 2 4</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[3]]$distances</span>
-<span class="co">#&gt; [1] 8 9</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[4]]</span>
-<span class="co">#&gt; [[4]]$indexes</span>
-<span class="co">#&gt; [1] 3 5</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[4]]$distances</span>
-<span class="co">#&gt; [1]  9 10</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[5]]</span>
-<span class="co">#&gt; [[5]]$indexes</span>
-<span class="co">#&gt; [1] 4 6</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[5]]$distances</span>
-<span class="co">#&gt; [1] 10 11</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[6]]</span>
-<span class="co">#&gt; [[6]]$indexes</span>
-<span class="co">#&gt; [1] 4 5</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[6]]$distances</span>
-<span class="co">#&gt; [1] 33.55087 11.00000</span>
+<span class="kw"><a href="../reference/nn.html">nn</a></span>(dio, <span class="dt">k =</span> <span class="dv">1</span>)
+<span class="co">#&gt; k Nearest neighbors of class 'nn'</span>
+<span class="co">#&gt; Dimension of sparse adjacency matrix: 32 X 32</span>
+knn &lt;-<span class="st"> </span><span class="kw"><a href="../reference/nn.html">nn</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(mtcars), <span class="dt">k =</span> <span class="dv">1</span>) <span class="co"># distance method defaults to 'euclidean'</span>
+knn
+<span class="co">#&gt; k Nearest neighbors of class 'nn'</span>
+<span class="co">#&gt; Dimension of sparse adjacency matrix: 32 X 32</span>
+<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/str">str</a></span>(knn) <span class="co"># observe the structure of the output</span>
+<span class="co">#&gt; List of 3</span>
+<span class="co">#&gt;  $ triplet: num [1:32, 1:3] 1 2 3 4 5 6 7 8 9 10 ...</span>
+<span class="co">#&gt;   ..- attr(*, "dimnames")=List of 2</span>
+<span class="co">#&gt;   .. ..$ : NULL</span>
+<span class="co">#&gt;   .. ..$ : chr [1:3] "row" "col" "distance"</span>
+<span class="co">#&gt;  $ size   : int 32</span>
+<span class="co">#&gt;  $ k      : num 1</span>
+<span class="co">#&gt;  - attr(*, "class")= chr "nn"</span>
 
-frnn &lt;-<span class="st"> </span><span class="kw"><a href="../reference/nn.html">nn</a></span>(dio, <span class="dt">r =</span> <span class="dv">10</span>)
-<span class="kw"><a href="https://www.rdocumentation.org/packages/utils/topics/head">head</a></span>(frnn)
-<span class="co">#&gt; [[1]]</span>
-<span class="co">#&gt; [[1]]$indexes</span>
-<span class="co">#&gt; [1] 2</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[1]]$distances</span>
-<span class="co">#&gt; [1] 7</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[2]]</span>
-<span class="co">#&gt; [[2]]$indexes</span>
-<span class="co">#&gt; [1] 1 3</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[2]]$distances</span>
-<span class="co">#&gt; [1] 7 8</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[3]]</span>
-<span class="co">#&gt; [[3]]$indexes</span>
-<span class="co">#&gt; [1] 2 4</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[3]]$distances</span>
-<span class="co">#&gt; [1] 8 9</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[4]]</span>
-<span class="co">#&gt; [[4]]$indexes</span>
-<span class="co">#&gt; [1] 3 5</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[4]]$distances</span>
-<span class="co">#&gt; [1]  9 10</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[5]]</span>
-<span class="co">#&gt; [[5]]$indexes</span>
-<span class="co">#&gt; [1] 4</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[5]]$distances</span>
-<span class="co">#&gt; [1] 10</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[6]]</span>
-<span class="co">#&gt; [[6]]$indexes</span>
-<span class="co">#&gt; integer(0)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; [[6]]$distances</span>
-<span class="co">#&gt; numeric(0)</span></code></pre></div>
+<span class="co"># frnn</span>
+<span class="kw"><a href="../reference/nn.html">nn</a></span>(dio, <span class="dt">r =</span> <span class="dv">3</span>)
+<span class="co">#&gt; Fixed radius nearest neighbors of class 'nn'</span>
+<span class="co">#&gt; Dimension of sparse adjacency matrix: 32 X 32</span>
+<span class="kw"><a href="../reference/nn.html">nn</a></span>(<span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/matrix">as.matrix</a></span>(mtcars), <span class="dt">r =</span> <span class="dv">3</span>)
+<span class="co">#&gt; Fixed radius nearest neighbors of class 'nn'</span>
+<span class="co">#&gt; Dimension of sparse adjacency matrix: 32 X 32</span></code></pre></div>
 </div>
 <div id="extract-and-replace-functions-for-dist-objects" class="section level3">
 <h3 class="hasAnchor">
