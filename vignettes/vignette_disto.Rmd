@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-> **disto**  is a R package that provides a high level API to interface over backends storing distance, dissimilarity, similarity matrices with matrix style extraction, replacement and other utilities. Currently, in-memory dist object backend is supported.
+> **disto**  is a R package that provides a high level API to interface over backends storing distance, dissimilarity, similarity matrices with matrix style extraction, replacement and other utilities. Disto supports in-memory distance matrices of 'dist' class and on-disk distance matrices of class 'bigdist'.
 
 ## Why disto?
 
@@ -32,7 +32,7 @@ In general,
 - dist object lacks matrix like extraction ie `d[1:5, ]` would not work.
 - Neither would the assignment work: `d[1, 2] <- 3`
 
-**disto** was conceived to address these issues while keeping dist object as the back-end with the philosophy of minimal copies. This evolved into high-level API for dealing with generic distance objects irrespective of whether the object is in memory, disk or a database. Currently, the bindings are provided for in-memory objects of class 'dist'.
+**disto** was conceived to address these issues while keeping dist object as the back-end with the philosophy of minimal copies. This evolved into high-level API for dealing with generic distance objects irrespective of whether the object is in memory, disk or a database. Currently, the bindings are provided for in-memory objects of class 'dist' and on-disk distance matrices of class 'bigdist' from [bigdist](https://github.com/talegari/bigdist) package.
 
 ## Examples
 
@@ -62,13 +62,8 @@ size(dio)
 # what are the names?
 names(dio)
 
-# convert to a dataframe
-# caveat: costly for large distance matrices
-head(as.data.frame(dio))
-
-# quick plots
-plot(dio, type = "dendrogram")
-plot(dio, type = "heatmap")
+# quick plot
+plot(dio)
 ```
 
 ### Extract and Replace
@@ -146,9 +141,10 @@ hi <- dapply(dio, 1, udf_nn)
 head(hi)
 ```
 
-### Nearest neighbors
+### Exact Nearest neighbors
 
 Two nearest methods are implemented: k nearest neighbors and fixed radius nearest neighbors for 'disto' handles and matrices.
+
 ```{r}
 # k nearest neighbors
 nn(dio, k = 1)

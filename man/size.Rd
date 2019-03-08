@@ -4,10 +4,10 @@
 \alias{size}
 \title{Obtain size of the disto object}
 \usage{
-size(disto, ...)
+size(x, ...)
 }
 \arguments{
-\item{disto}{object of class disto}
+\item{x}{object of class disto}
 
 \item{...}{currently not in use}
 }

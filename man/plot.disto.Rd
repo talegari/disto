@@ -9,30 +9,16 @@
 \arguments{
 \item{x}{object of class disto}
 
-\item{...}{Additional arguments. See details.}
+\item{...}{Currently unused}
 }
 \value{
-ggplot object
+Plot output as side effect
 }
 \description{
-Various plotting options for subsets of disto objects
-}
-\details{
-Among the additional arguments,
-
-\itemize{
-
-\item 'type: is mandatory. Currently, these options are supported: heatmap, dendrogram.
-
-\item sampleSize: A random sample of indexes is drawn from the distance object underlyting the disto mapping. Default value of sampleSize is set to 100.
-
-\item seed seed for random sample. Default is 100.
-
-}
+Density plot a disto object
 }
 \examples{
 temp <- stats::dist(iris[,1:4])
 dio  <- disto(objectname = "temp")
-plot(dio, type = "heatmap")
-plot(dio, type = "dendrogram")
+plot(dio)
 }

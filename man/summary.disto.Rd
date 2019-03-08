@@ -12,7 +12,7 @@
 \item{...}{currently not in use}
 }
 \value{
-invisibly returns the tidy output of summary as a dataframe.
+Result of summary function
 }
 \description{
 Summary method for dist class

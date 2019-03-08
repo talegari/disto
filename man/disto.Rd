@@ -11,7 +11,7 @@ disto(..., backend = "dist")
 \arguments{
 \item{...}{Arguments for a backend. See details}
 
-\item{backend}{(string) Specify a backend. Currently supported: 'dist'}
+\item{backend}{(string) Specify a backend. Currently supported: 'dist', 'bigdist'}
 }
 \value{
 Object of class 'disto' which is a thin wrapper on a list
@@ -41,7 +41,15 @@ This is a wrapper to create a 'disto' handle over different backends
   'string'.
 
   \item env: Environment where the object exists. When this is missing, its
-  assumed to be parent environment.
+  assumed to be parent environment.#'
+
+  }
+
+  \item \strong{bigdist}:
+
+  \itemize{
+
+  \item object: Object of the class 'bigdist'
 
   }
 
@@ -49,7 +57,7 @@ This is a wrapper to create a 'disto' handle over different backends
 }
 \examples{
 temp <- stats::dist(iris[,1:4])
-dio   <- disto(objectname = "temp")
+dio  <- disto(objectname = "temp")
 dio
 unclass(dio)
 }

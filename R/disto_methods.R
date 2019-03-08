@@ -17,17 +17,25 @@
 #'   'string'.
 #'
 #'   \item env: Environment where the object exists. When this is missing, its
-#'   assumed to be parent environment.
+#'   assumed to be parent environment.#'
+#'
+#'   }
+#'
+#'   \item \strong{bigdist}:
+#'
+#'   \itemize{
+#'
+#'   \item object: Object of the class 'bigdist'
 #'
 #'   }
 #'
 #'   }
 #' @param ... Arguments for a backend. See details
-#' @param backend (string) Specify a backend. Currently supported: 'dist'
+#' @param backend (string) Specify a backend. Currently supported: 'dist', 'bigdist'
 #' @return Object of class 'disto' which is a thin wrapper on a list
 #' @examples
 #' temp <- stats::dist(iris[,1:4])
-#' dio   <- disto(objectname = "temp")
+#' dio  <- disto(objectname = "temp")
 #' dio
 #' unclass(dio)
 #' @export
@@ -37,13 +45,14 @@ disto <- function(...
 
   assertthat::assert_that(assertthat::is.string(backend))
 
-  backends  <- c("dist")
-  assertthat::assert_that(backend %in% c("dist"))
+  backends  <- c("dist", "bigdist")
+  assertthat::assert_that(backend %in% backends)
 
   arguments <- list(...)
 
   res <- switch(backend
-         , dist = disto_dist(arguments)
+         , dist    = disto_dist(arguments)
+         , bigdist = disto_bigdist(arguments)
          )
   res$backend <- backend
   return(res)
@@ -83,10 +92,28 @@ disto_dist <- function(arguments){
   return(dlist)
 }
 
+#' @name disto_bigdist
+#' @title Constructior of disto with bigdist backend
+#' @description  Constructior of disto with bigdist backend
+#' @param arguments to construct disto object
+#' @return returns a list
+#' @details to be used by disto constructor function
+disto_bigdist <- function(arguments){
+
+  assertthat::assert_that(!is.null(arguments$object))
+  assertthat::assert_that(inherits(arguments$object, "bigdist"))
+
+  dlist        <- vector("list")
+  dlist$obj   <- arguments$object
+  class(dlist) <- "disto"
+
+  return(dlist)
+}
+
 #' @name size
 #' @title Obtain size of the disto object
 #' @description Obtain size of the disto object
-#' @param disto object of class disto
+#' @param x object of class disto
 #' @param ... currently not in use
 #' @return Integer vector of length 1
 #' @examples
@@ -94,10 +121,11 @@ disto_dist <- function(arguments){
 #' dio   <- disto(objectname = "temp")
 #' size(dio)
 #' @export
-size <- function(disto, ...){
+size <- function(x, ...){
 
-  res <- switch(disto$backend
-    , dist = attr(get(disto$name, envir = disto$env), "Size")
+  res <- switch(x$backend
+    , dist    = attr(get(x$name, envir = x$env), "Size")
+    , bigdist = bigdist::bigdist_size(x$obj)
     )
 
   return( res )
@@ -118,6 +146,7 @@ names.disto <- function(x){
 
   res <- switch(x$backend
                 , dist = attr(get(x$name, envir = x$env), "Labels")
+                , bigdist = NULL
                 )
   return(res)
 }
@@ -150,7 +179,8 @@ names.disto <- function(x){
 
       assign(x$name, val, envir = x$env)
 
-           }
+    }
+    , bigdist  = message("Not implemented for bigdist")
   )
 
   return(invisible(x))
@@ -172,7 +202,7 @@ print.disto <- function(x, ...){
   message("disto with backend: ", x$backend)
   message("size: ", size(x))
 
-  return(invisible(NULL))
+  return(invisible(x))
 }
 
 #' @name summary.disto
@@ -180,7 +210,7 @@ print.disto <- function(x, ...){
 #' @description Summary method for dist class
 #' @param object object of class disto
 #' @param ... currently not in use
-#' @return invisibly returns the tidy output of summary as a dataframe.
+#' @return Result of summary function
 #' @examples
 #' temp <- stats::dist(iris[,1:4])
 #' dio   <- disto(objectname = "temp")
@@ -188,46 +218,17 @@ print.disto <- function(x, ...){
 #' summary(dio)
 #' @export
 summary.disto <- function(object, ...){
+
   res <- switch(object$backend
-    , dist = broom::tidy(summary.default(get(object$name
-                                 , envir = object$env
-                                )
-                        )
-                    )
+    , dist = {
+        summary.default(get(object$name, envir = object$env))
+        print(object)
+    }
+    , bigdist = message("Not implemented for bigdist")
     )
 
-  print(object)
-  print(knitr::kable(tidyr::gather(res, key = "statistic")))
   return(invisible(res))
 }
-
-
-#' @name as.data.frame.disto
-#' @title Convert a disto object to dataframe
-#' @description Convert the underlying data of a disto object to a dataframe in
-#'   long format (3 columns: item1, item2, distance). This might be a costly
-#'   operation and should be used with caution.
-#' @param x object of class disto
-#' @param ... arguments for \code{\link[broom]{tidy}}
-#' @return a dataframe in long format
-#' @examples
-#' temp <- stats::dist(iris[,1:4])
-#' dio  <- disto(objectname = "temp")
-#' dio
-#' head(as.data.frame(dio))
-#' @export
-as.data.frame.disto <- function(x, ...){
-
-  arguments <- list(...)
-  res <- switch(x$backend
-    , dist = do.call(broom::tidy
-                     , c(list(get(x$name, envir = x$env)), arguments)
-                     )
-    )
-
-  return( res )
-}
-
 
 #' @name `[.disto`
 #' @title Extract from a disto object in matrix style extraction
@@ -257,6 +258,13 @@ as.data.frame.disto <- function(x, ...){
 
   res <- switch(x$backend
     , dist = dist_extract(get(x$name, envir = x$env)
+                          , i
+                          , j
+                          , k
+                          , product = product
+                          )
+    , bigdist = bigdist::bigdist_extract(
+                          x$obj
                           , i
                           , j
                           , k
@@ -310,17 +318,33 @@ as.data.frame.disto <- function(x, ...){
   }
 
   res <- switch(x$backend
-    , dist = {
-        if(missing(k)){
+    ,
+    dist = {
+      if(missing(k)){
 
-          `[`(get(x$name, envir = x$env), dist_ij_k(i, j, size))
+        `[`(get(x$name, envir = x$env), dist_ij_k(i, j, size))
 
-        } else {
+      } else {
 
-          `[`(get(x$name, envir = x$env), k)
+        `[`(get(x$name, envir = x$env), k)
 
-        }
       }
+    }
+    ,
+    bigdist = {
+
+      if(missing(k)){
+
+        x$obj$fbm[i, j]
+
+      } else {
+
+        ijVec <- as.integer(dist_k_ij[k])
+        x$obj$fbm[ijVec[1], ijVec[2]]
+
+      }
+
+    }
     )
 
   return(res)
@@ -370,157 +394,49 @@ as.data.frame.disto <- function(x, ...){
 
         assign(x$name, val, envir = x$env)
 
+    }
+    , bigdist = {
+
+      if(missing(k)){
+        val <- bigdist::bigdist_replace(x$obj
+                                        , i = i
+                                        , j = j
+                                        , value = value
+                                        )
+      } else {
+        val <- bigdist::bigdist_replace(x$obj
+                                        , k = k
+                                        , value = value
+                                        )
       }
+
+    }
     )
 
   return(invisible(x))
 }
 
-#' @name dapply
-#' @title lapply like function for disto object
-#' @description Apply function for data underlying disto object
-#' @param x disto object
-#' @param margin (one among 1 or 2) dimension to apply function along
-#' @param fun Function to apply over the margin
-#' @param subset (integer vector) Row/Column numbers along the margin. If this
-#'   is missing, all rows or columns are considered
-#' @param nproc Number of parallel processes (unix only)
-#' @param progress (flag) Whether to show the progress bar or not. If missing
-#'   and if the length of the subset is at least 1e4, progress is considered to
-#'   be TRUE.
-#' @details fun should accept two arguments(in the same order): First, a vector
-#'   of distances (row or column of a disto depending on the margin). Second,
-#'   the row or the column number. See the example below
-#' @return A list
-#' @examples
-#' temp <- dist(iris[,1:4])
-#' dio  <- disto(objectname = "temp")
-#' # function to pick unsorted indexes of 5 nearest neighbors (excepting itself)
-#' udf_nn <- function(distances, index){
-#'
-#'   nnPlusOne <- which(
-#'                  data.table::frankv(distances, ties.method = "dense") <= 6)
-#'   setdiff(nnPlusOne, index)
-#' }
-#' hi <- dapply(dio, 1, udf_nn)
-#' head(hi)
-#' max(sapply(hi, length))
-#' @export
-dapply <- function(x
-                   , margin = 1
-                   , fun
-                   , subset
-                   , nproc = 1
-                   , progress
-                   ){
-
-  assertthat::assert_that(inherits(x, "disto"))
-  assertthat::assert_that(assertthat::is.scalar(margin) && margin %in% 1:2)
-  assertthat::assert_that(is.function(fun))
-  assertthat::assert_that(assertthat::is.count(nproc))
-  assertthat::assert_that(missing(progress) || assertthat::is.flag(progress))
-
-  size <- size(x)
-  if(missing(subset)){
-    subset <- 1:size
-  } else {
-    assertthat::assert_that(all(subset %in% 1:size))
-  }
-  if(missing(progress)){
-    progress <- ifelse(size > 999, TRUE, FALSE)
-  }
-
-  if(progress){
-    res <- pbmcapply::pbmclapply(subset
-                                 , function(s) fun(as.numeric(x[s, ]), s)
-                                 , mc.cores = nproc
-                                 )
-  } else {
-    res <- parallel::mclapply(subset
-                              , function(s) fun(as.numeric(x[s, ]), s)
-                              , mc.cores = nproc
-                              )
-  }
-  return(res)
-}
-
 #' @name plot.disto
 #' @title Plot a disto object
-#' @description Various plotting options for subsets of disto objects
+#' @description Density plot a disto object
 #' @param x object of class disto
-#' @param ... Additional arguments. See details.
-#' @details Among the additional arguments,
-#'
-#' \itemize{
-#'
-#' \item 'type: is mandatory. Currently, these options are supported: heatmap, dendrogram.
-#'
-#' \item sampleSize: A random sample of indexes is drawn from the distance object underlyting the disto mapping. Default value of sampleSize is set to 100.
-#'
-#' \item seed seed for random sample. Default is 100.
-#'
-#' }
-#' @return ggplot object
+#' @param ... Currently unused
+#' @return Plot output as side effect
 #' @examples
 #' temp <- stats::dist(iris[,1:4])
 #' dio  <- disto(objectname = "temp")
-#' plot(dio, type = "heatmap")
-#' plot(dio, type = "dendrogram")
+#' plot(dio)
 #' @export
 plot.disto <- function(x, ...){
-
-  arguments <- list(...)
-
-  assertthat::assert_that(assertthat::is.string(arguments$type))
-  assertthat::assert_that(arguments$type %in% c("heatmap", "dendrogram"))
-  if(!is.null(arguments$sampleSize)){
-    assertthat::assert_that(assertthat::is.count(arguments$sampleSize))
-  } else {
-    arguments$sampleSize <- 100L
+  if(x$backend == "dist"){
+    data.frame(values = unclass(get(x$name, envir = x$env))) %>%
+      ggplot2::ggplot(ggplot2::aes_string("values")) +
+      ggplot2::geom_density() +
+      ggplot2::xlab("Distances") +
+      ggplot2::ggtitle("Density plot of distances")
   }
 
-  if(!is.null(arguments$seed)){
-    assertthat::assert_that(assertthat::is.count(arguments$seed))
+  if(x$backend == "bigdist"){
+    message("Not implemented for bigdist")
   }
-
-  size <- size(x)
-  res <- switch(x$backend
-    , dist =
-      {
-        if(size > arguments$sampleSize){
-
-          set.seed(ifelse(is.null(arguments$seed), 1L, arguments$seed))
-          si <- sample.int(size, arguments$sampleSize)
-          do <- dist_subset(get(x$name, envir = x$env), si)
-          if(is.null(attr(do, "Labels"))){
-            attr(do, "Labels") <- as.character(si)
-          }
-          labs <- attr(do, "Labels")
-
-        } else {
-
-          do   <- get(x$name, envir = x$env)
-          if(is.null(attr(do, "Labels"))){
-            attr(do, "Labels") <- as.character(1:size)
-          }
-          labs <- attr(do, "Labels")
-        }
-
-        plotObject <- switch(arguments$type
-          , heatmap = {
-            factoextra::fviz_dist(do) +
-              ggplot2::ggtitle("Heatmap of distances")
-          }
-          , dendrogram = {
-            factoextra::fviz_dend(fastcluster::hclust(do)
-                                  , repel = TRUE
-                                  , horiz = TRUE
-                                  ) +
-              ggplot2::ggtitle("Dendrogram of distances")
-          }
-          )
-      }
-    )
-
-  return(res)
 }

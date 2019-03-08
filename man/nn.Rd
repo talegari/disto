@@ -4,7 +4,7 @@
 \alias{nn}
 \title{Nearest neighbors and distances}
 \usage{
-nn(x, k, r, ...)
+nn(x, k, r, method = "euclidean", ...)
 }
 \arguments{
 \item{x}{Object of class 'disto' or a numeric matrix}
@@ -13,12 +13,15 @@ nn(x, k, r, ...)
 
 \item{r}{Radius for nearest neighbors}
 
+\item{method}{(string or function) distance metric when x is a matrix. Passed
+to `proxy::dist`. Ignored when x is not a matrix.}
+
 \item{...}{Additional arguments for \code{\link{dapply}} when x is 'disto'
 object. Else additional arguments are sent to
 \code{\link[pbmcapply]{pbmclapply}}}
 }
 \value{
-A list with these elements: \itemize{
+Object of class nn. A list with these elements: \itemize{
 
   \item \emph{triplet}: Matrix with three columns: row, col and distance. For
   a fixed observation(value in 'row'), all corresponding values in 'col' are
